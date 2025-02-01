@@ -26,4 +26,22 @@ router.get('/isbn/:isbn', asyncRoute(
   }),
 );
 
+router.post('/generate-md', (req, res) => {
+  const bookData = req.body;
+  const templatePath = path.join(__dirname, '../markdown/template.md.hbs');
+  const outputPath = path.join(__dirname, '../markdown/books', `${bookData.isbn}.md`);
+
+  fs.readFile(templatePath, 'utf8', (err, templateContent) => {
+    if (err) return res.status(500).send('Error reading template');
+    const template = handlebars.compile(templateContent);
+    const markdown = template(bookData);
+
+    fs.writeFile(outputPath, markdown, (err) => {
+      if (err) return res.status(500).send('Error writing markdown file');
+      res.send('Markdown file generated successfully');
+    });
+  });
+});
+
+
 module.exports = router;

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barcode Scanner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+    }
+    video {
+      width: 100%;
+      max-width: min(400px, 100vw);
+    }
+    #result {
+      margin-top: 20px;
+      max-width: 100vw;
+    }
+    button {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scan Barcode</h1>
+  <video id="preview"></video>
+  <div id="result"></div>
+  <button id="generate-md" style="display:none;">Generate Markdown</button>
+  <button id="reset" style="display:none;">Reset</button>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <script>
+    const codeReader = new ZXing.BrowserBarcodeReader();
+    const previewElem = document.getElementById('preview');
+    const resultElem = document.getElementById('result');
+    const generateMdButton = document.getElementById('generate-md');
+    const resetButton = document.getElementById('reset');
+    const beepAudio = new Audio('beep.mp3');
+    codeReader.decodeFromVideoDevice(null, previewElem, (result, err) => {
+      if (result) {
+        const isbn = result.text;
+        fetch(`/books/isbn/${isbn}`)
+          .then(response => response.json())
+          .then(data => {
+            resultElem.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            generateMdButton.style.display = 'block';
+            resetButton.style.display = 'block';
+          });
+        beepAudio.play();
+      }
+    });
+
+    generateMdButton.addEventListener('click', () => {
+      const bookData = JSON.parse(resultElem.querySelector('pre').textContent);
+      fetch('/books/generate-md', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookData)
+      }).then(response => response.text())
+        .then(message => alert(message));
+    });
+
+    resetButton.addEventListener('click', () => {
+      resultElem.innerHTML = '';
+      generateMdButton.style.display = 'none';
+      resetButton.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
