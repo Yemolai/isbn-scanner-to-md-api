@@ -25,6 +25,9 @@
     button {
       margin: 10px;
     }
+    .error {
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -41,15 +44,24 @@
     const generateMdButton = document.getElementById('generate-md');
     const resetButton = document.getElementById('reset');
     const beepAudio = new Audio('beep.mp3');
+    
     codeReader.decodeFromVideoDevice(null, previewElem, (result, err) => {
       if (result) {
         const isbn = result.text;
         fetch(`/books/isbn/${isbn}`)
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Failed to fetch book data');
+            }
+            return response.json();
+          })
           .then(data => {
             resultElem.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
             generateMdButton.style.display = 'block';
             resetButton.style.display = 'block';
+          })
+          .catch(error => {
+            resultElem.innerHTML = `<p class="error">Error: ${error.message}</p>`;
           });
         beepAudio.play();
       }
@@ -64,7 +76,8 @@
         },
         body: JSON.stringify(bookData)
       }).then(response => response.text())
-        .then(message => alert(message));
+        .then(message => alert(message))
+        .catch(error => alert(`Error: ${error.message}`));
     });
 
     resetButton.addEventListener('click', () => {
