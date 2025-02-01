@@ -9,13 +9,12 @@ services:
       - .:/app
     command: sh -c "npm install && npm start"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`yourdomain.com`)"
-      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.rule=Host(`m1-yemolai`)"
       - "traefik.http.services.app.loadbalancer.server.port=3000"
-      - "traefik.http.routers.app.tls.certresolver=myresolver"
+      - "traefik.http.routers.app.tls=true"
     networks:
       - web
 
@@ -27,18 +26,18 @@ services:
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=admin@yemolai.com"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--providers.file.directory=/etc/traefik/dynamic"
     ports:
       - "3200:80"
-      - "443:443"
+      - "3201:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
+      - "./traefik/certs:/etc/certs:ro"
+      - "./traefik/dynamic:/etc/traefik/dynamic:ro"
     networks:
       - web
 
 networks:
   web:
-    external: true
+    name: isbn-scanner-network
