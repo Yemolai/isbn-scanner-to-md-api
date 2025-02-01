@@ -25,12 +25,12 @@ class GoogleBooksAPI extends WithLogger {
     this.__console.log(`URL: ${url}`);
     return fetch(url, { method: 'get', headers: {} })
       .then(async (response) => {
-        const textBody = await response.text();
+        const jsonBody = await response.json(); // Fix here
         this.__console.log(`Response status: ${response.status} ${response.statusText}`);
         if (!response.ok) {
-          throw new Error('Failed request', { cause: textBody });
+          throw new Error('Failed request', { cause: JSON.stringify(jsonBody) });
         }
-        return JSON.parse(textBody);
+        return jsonBody;
       })
       .then((jsonBody) => {
         if (!jsonBody || !jsonBody.items || jsonBody.items.length < 1) return null;
