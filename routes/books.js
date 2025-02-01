@@ -30,21 +30,26 @@ router.get('/isbn/:isbn', asyncRoute(
   }),
 );
 
-router.post('/generate-md', (req, res) => {
-  const bookData = req.body;
-  const templatePath = path.join(__dirname, '../markdown/template.md.hbs');
-  const outputPath = path.join(__dirname, '../markdown/books', `${bookData.isbn}.md`);
+router.post('/generate-md', async (req, res) => {
+  try {
+    const { isbn } = req.body;
 
-  fs.readFile(templatePath, 'utf8', (err, templateContent) => {
-    if (err) return res.status(500).send('Error reading template');
-    const template = handlebars.compile(templateContent);
-    const markdown = template(bookData);
+    if (!isbn) {
+      return res.status(400).json({ error: 'ISBN is required' });
+    }
 
-    fs.writeFile(outputPath, markdown, (err) => {
-      if (err) return res.status(500).send('Error writing markdown file');
-      res.send('Markdown file generated successfully');
+    const isbnService = new ISBNService([new GoogleBooksAPI(), new OpenLibraryAPI()]);
+    const book = await isbnService.getBookByISBN(isbn);
+    const { path } = await isbnService.generateMarkdown(book);
+
+    res.status(201).json({
+      message: 'Markdown generated successfully',
+      filepath: path,
     });
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 

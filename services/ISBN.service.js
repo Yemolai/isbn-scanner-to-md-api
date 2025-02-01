@@ -1,4 +1,8 @@
 const { Book } = require("../models/Book.model");
+const fs = require('fs').promises;
+const path = require('path');
+const handlebars = require('handlebars');
+const { escapeFilename, getMarkdownPath } = require('../utils/paths');
 
 class ISBNService {
   constructor(providers) {
@@ -46,6 +50,28 @@ class ISBNService {
     }, {});
 
     return new Book(mergedBook);
+  }
+
+  async generateMarkdown(bookData) {
+    const templateContent = await fs.readFile('./markdown/template.md.hbs', 'utf8');
+    const template = handlebars.compile(templateContent);
+    const markdown = template(bookData);
+
+    const outputDir = await getMarkdownPath();
+    const filename = `${escapeFilename(bookData.title)}.md`;
+    const outputPath = path.join(outputDir, filename);
+
+    try {
+      await fs.writeFile(outputPath, markdown, 'utf8');
+
+      return {
+        content: markdown,
+        path: outputPath
+      };
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error writing markdown file');
+    }
   }
 }
 
