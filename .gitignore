@@ -62,3 +62,6 @@ typings/
 
 # traefik certs should not be in git
 traefik/certs/*
+
+# ignore generated markdown files
+markdown/**/*.md
