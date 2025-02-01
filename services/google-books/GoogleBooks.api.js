@@ -1,5 +1,6 @@
 const { Book } = require("../../models/Book.model");
 const { WithLogger } = require("../../utils/WithLogger");
+const fetch = require('node-fetch');
 
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = process.env.GOOGLE_BOOKS_API;
@@ -20,17 +21,22 @@ class GoogleBooksAPI extends WithLogger {
     queryParams.set('key', API_KEY);
 
     const url = `${BASE_URL}?${queryParams}`;
+    this.__console.log(`Fetching book data from Google Books API for ISBN:${isbnCode}`);
+    this.__console.log(`URL: ${url}`);
     return fetch(url, { method: 'get', headers: {} })
-      .then((response) => {
+      .then(async (response) => {
+        const textBody = await response.text();
+        this.__console.log(`Response status: ${response.status} ${response.statusText}`);
         if (!response.ok) {
-          throw new Error('Failed request', { cause: response.body });
+          throw new Error('Failed request', { cause: textBody });
         }
-        return response.json();
+        return JSON.parse(textBody);
       })
       .then((jsonBody) => {
         if (!jsonBody || !jsonBody.items || jsonBody.items.length < 1) return null;
         const count = jsonBody.items.length;
         this.__console.log(`Found ${count} record(s) for ISBN:${isbnCode}`);
+        this.__console.debug(JSON.stringify(jsonBody, null, 2));
 
         return this.toBookModel(jsonBody.items[0]);
       });

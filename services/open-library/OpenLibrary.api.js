@@ -1,6 +1,7 @@
 const { Book } = require("../../models/Book.model");
 const { WithLogger } = require("../../utils/WithLogger");
 const { OpenLibraryDTO } = require("./OpenLibrary.dto");
+const fetch = require('node-fetch');
 
 const BASE_URL = 'https://openlibrary.org/api';
 
