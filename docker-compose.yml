@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: app-isbn-to-markdown-api
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`yourdomain.com`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.services.app.loadbalancer.server.port=3000"
+      - "traefik.http.routers.app.tls.certresolver=myresolver"
+    networks:
+      - web
+
+  traefik:
+    image: traefik:v2.4
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=admin@yemolai.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "3200:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
