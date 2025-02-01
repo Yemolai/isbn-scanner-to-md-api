@@ -3,7 +3,7 @@ const { WithLogger } = require("../../utils/WithLogger");
 const fetch = require('node-fetch');
 
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
-const API_KEY = process.env.GOOGLE_BOOKS_API;
+const API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 
 class GoogleBooksAPI extends WithLogger {
   constructor() {
@@ -74,5 +74,7 @@ class GoogleBooksAPI extends WithLogger {
     });
   }
 }
+
+GoogleBooksAPI.isAvailable = () => Boolean(API_KEY);
 
 module.exports = { GoogleBooksAPI };

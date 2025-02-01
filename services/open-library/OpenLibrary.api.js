@@ -42,4 +42,6 @@ class OpenLibraryAPI extends WithLogger {
   }
 }
 
+OpenLibraryAPI.isAvailable = () => true;
+
 module.exports = { OpenLibraryAPI };

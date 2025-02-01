@@ -1,10 +1,22 @@
 const router = require('express').Router();
 
 const { GoogleBooksAPI } = require('../services/google-books/GoogleBooks.api');
+const { ISBNDbAPI } = require('../services/isbndb/ISBNDb.api');
 const { OpenLibraryAPI } = require('../services/open-library/OpenLibrary.api');
 const { ISBNService } = require('../services/ISBN.service');
 const { asyncRoute } = require('../utils/asyncRoute');
 
+const apis = [
+  OpenLibraryAPI,
+  GoogleBooksAPI,
+  ISBNDbAPI,
+];
+
+function getISBNServiceInstance() {
+  const availableApis = apis.filter(api => api.isAvailable());
+  const apiInstances = availableApis.map(Api => new Api());
+  return new ISBNService(apiInstances);
+}
 
 router.get('/isbn/:isbn', asyncRoute(
   /**
@@ -21,7 +33,7 @@ router.get('/isbn/:isbn', asyncRoute(
       return;
     }
 
-    const isbnService = new ISBNService([new GoogleBooksAPI(), new OpenLibraryAPI()]);
+    const isbnService = getISBNServiceInstance();
     const book = await isbnService.getBookByISBN(isbn);
     res.json({ data: book.toObject() });
   }),
@@ -35,7 +47,7 @@ router.post('/generate-md', async (req, res) => {
       return res.status(400).json({ error: 'ISBN is required' });
     }
 
-    const isbnService = new ISBNService([new GoogleBooksAPI(), new OpenLibraryAPI()]);
+    const isbnService = getISBNServiceInstance();
     const book = await isbnService.getBookByISBN(isbn);
     const { path } = await isbnService.generateMarkdown(book);
 
