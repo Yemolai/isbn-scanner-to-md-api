@@ -1,8 +1,9 @@
 const { Book } = require("../models/Book.model");
 const fs = require('fs').promises;
 const path = require('path');
+const fetch = require('node-fetch');
 const handlebars = require('handlebars');
-const { escapeFilename, getMarkdownPath } = require('../utils/paths');
+const { escapeFilename, getMarkdownPath, getCoverImagesPath, formatImagePath } = require('../utils/paths');
 
 class ISBNService {
   constructor(providers) {
@@ -52,10 +53,39 @@ class ISBNService {
     return new Book(mergedBook);
   }
 
+  async downloadCoverImage(book) {
+    if (!book.coverImage) return null;
+
+    const imagesPath = await getCoverImagesPath();
+    const filename = formatImagePath(book.isbn, book.title, book.coverImage);
+    if (!filename) return null;
+
+    const outputPath = path.join(imagesPath, filename);
+
+    try {
+      const response = await fetch(book.coverImage);
+      if (!response.ok) throw new Error('Failed to fetch image');
+
+      const buffer = await response.buffer();
+      await fs.writeFile(outputPath, buffer);
+
+      return path.relative(await getMarkdownPath(), outputPath);
+    } catch (error) {
+      console.error('Error downloading cover image:', error);
+      return null;
+    }
+  }
+
   async generateMarkdown(bookData) {
+    const localCoverPath = await this.downloadCoverImage(bookData);
+    const templateData = {
+      ...bookData,
+      localCoverPath
+    };
+
     const templateContent = await fs.readFile('./markdown/template.md.hbs', 'utf8');
     const template = handlebars.compile(templateContent);
-    const markdown = template(bookData);
+    const markdown = template(templateData);
 
     const outputDir = await getMarkdownPath();
     const filename = `${escapeFilename(bookData.title)}.md`;

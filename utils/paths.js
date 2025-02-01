@@ -18,7 +18,27 @@ async function getMarkdownPath() {
   return targetPath;
 }
 
+async function getCoverImagesPath() {
+  const customPath = process.env.COVER_IMAGES_PATH;
+  if (customPath) {
+    await fs.mkdir(customPath, { recursive: true });
+    return customPath;
+  }
+  const defaultPath = path.join(process.cwd(), 'cover-images');
+  await fs.mkdir(defaultPath, { recursive: true });
+  return defaultPath;
+}
+
+function formatImagePath(isbn, title, imageUrl) {
+  if (!imageUrl) return null;
+  const extension = path.extname(new URL(imageUrl).pathname) || '.jpg';
+  const filename = `${isbn}-${escapeFilename(title)}${extension}`;
+  return filename;
+}
+
 module.exports = {
   escapeFilename,
-  getMarkdownPath
+  getMarkdownPath,
+  getCoverImagesPath,
+  formatImagePath
 };
