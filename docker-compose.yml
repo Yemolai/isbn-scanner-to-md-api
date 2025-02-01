@@ -12,7 +12,7 @@ services:
       - NODE_ENV=development
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`m1-yemolai`)"
+      - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME:-isbn-scanner.local}`)"
       - "traefik.http.services.app.loadbalancer.server.port=3000"
       - "traefik.http.routers.app.tls=true"
     networks:
