@@ -90,7 +90,7 @@ class ISBNService extends WithLogger {
     const markdown = template(templateData);
 
     const outputDir = await getMarkdownPath();
-    const filename = `${escapeFilename(bookData.title)}.md`;
+    const filename = `${escapeFilename(bookData.title, { replacer: ' ', lowercase: false })}.md`;
     const outputPath = path.join(outputDir, filename);
 
     try {

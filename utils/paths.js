@@ -1,12 +1,18 @@
 const path = require('path');
 const fs = require('fs').promises;
 
-function escapeFilename(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+function escapeFilename(title, { 
+  replacer = '-', 
+  lowercase = true, 
+  maxLength = 100 
+} = {}) {
+  const _title = lowercase ? title.toLowerCase() : title;
+  return _title
+    // preserve á à ã â é ê í ó ô õ ú ç ü ñ and their uppercase variants
+    .replace(/[^a-zA-ZáàãâéêíóôõúçüñÁÀÃÂÉÊÍÓÔÕÚÇÜÑ'0-9\n\r\-]+/g, replacer)
+    .replace(new RegExp(`${replacer}+`, 'g'), replacer)
+    .replace(new RegExp(`^${replacer}|${replacer}$`, 'g'), '')
+    .substring(0, maxLength);
 }
 
 async function getMarkdownPath() {

@@ -7,9 +7,9 @@ const { ISBNService } = require('../services/ISBN.service');
 const { asyncRoute } = require('../utils/asyncRoute');
 
 const apis = [
-  OpenLibraryAPI,
-  GoogleBooksAPI,
   ISBNDbAPI,
+  GoogleBooksAPI,
+  OpenLibraryAPI,
 ];
 
 function getISBNServiceInstance() {
