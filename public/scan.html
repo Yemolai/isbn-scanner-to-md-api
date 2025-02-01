@@ -193,7 +193,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(bookData)
+        body: JSON.stringify({ isbn: bookData.isbn }),
       }).then(response => response.text())
         .then(message => alert(message))
         .catch(error => alert(`Error: ${error.message}`))
