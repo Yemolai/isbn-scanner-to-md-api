@@ -28,7 +28,6 @@ router.get('/isbn/:isbn', asyncRoute(
   async (req, res) => {
     const { isbn } = req.params;
     if (!isbn || /^([0-9]{9}[\-]?[0-9])|([0-9]{13})$/.test(isbn) == false) {
-      console.log(JSON.stringify({ isbn }, null, 2));
       res.status(400).json({ error: true, reasons: ['invalid ISBN parameter given'] });
       return;
     }
@@ -56,7 +55,7 @@ router.post('/generate-md', async (req, res) => {
       filepath: path,
     });
   } catch (error) {
-    console.error(error);
+    console.error(new Date().toISOString(), '[/generate-md]', error);
     res.status(500).json({ error: error.message });
   }
 });

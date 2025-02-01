@@ -4,9 +4,11 @@ const path = require('path');
 const fetch = require('node-fetch');
 const handlebars = require('handlebars');
 const { escapeFilename, getMarkdownPath, getCoverImagesPath, formatImagePath } = require('../utils/paths');
+const { WithLogger } = require("../utils/WithLogger");
 
-class ISBNService {
+class ISBNService extends WithLogger {
   constructor(providers) {
+    super();
     this.providers = providers;
   }
 
@@ -71,7 +73,7 @@ class ISBNService {
 
       return path.relative(await getMarkdownPath(), outputPath);
     } catch (error) {
-      console.error('Error downloading cover image:', error);
+      this.__console.error('Error downloading cover image:', error);
       return null;
     }
   }
@@ -99,7 +101,7 @@ class ISBNService {
         path: outputPath
       };
     } catch (error) {
-      console.error(error);
+      this.__console.error(error);
       throw new Error('Error writing markdown file');
     }
   }
