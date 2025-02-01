@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
 const path = require('path');
-const handlebars = require('handlebars');
-const fetch = require('node-fetch');
 
 /* GET home page. */
 router.get('/', function(_req, res, _next) {
