@@ -1,4 +1,5 @@
 const { GoogleBooksAPI } = require('../services/google-books/GoogleBooks.api');
+const { OpenLibraryAPI } = require('../services/open-library/OpenLibrary.api');
 const { ISBNService } = require('../services/ISBN.service');
 const { asyncRoute } = require('../utils/asyncRoute');
 
@@ -19,7 +20,7 @@ router.get('/isbn/:isbn', asyncRoute(
       return;
     }
 
-    const isbnService = new ISBNService(GoogleBooksAPI);
+    const isbnService = new ISBNService([new GoogleBooksAPI(), new OpenLibraryAPI()]);
     const book = await isbnService.getBookByISBN(isbn);
     res.json({ data: book.toObject() });
   }),

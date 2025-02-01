@@ -35,6 +35,7 @@ class OpenLibraryAPI extends WithLogger {
         if (!jsonBody || Object.keys(jsonBody).length < 1) return null;
         const count = Object.keys(jsonBody).length;
         this.__console.log(`Found ${count} record(s) for ISBN:${isbnCode}`);
+        this.__console.debug(JSON.stringify(jsonBody, null, 2));
 
         return OpenLibraryDTO.fromAPIResponse(jsonBody).toBookModel();
       });
