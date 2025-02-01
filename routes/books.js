@@ -1,7 +1,4 @@
 const router = require('express').Router();
-const fs = require('fs');
-const handlebars = require('handlebars');
-const path = require('path');
 
 const { GoogleBooksAPI } = require('../services/google-books/GoogleBooks.api');
 const { OpenLibraryAPI } = require('../services/open-library/OpenLibrary.api');
