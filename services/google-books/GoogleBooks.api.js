@@ -32,13 +32,25 @@ class GoogleBooksAPI extends WithLogger {
         }
         return jsonBody;
       })
-      .then((jsonBody) => {
+      .then(async (jsonBody) => {
         if (!jsonBody || !jsonBody.items || jsonBody.items.length < 1) return null;
         const count = jsonBody.items.length;
         this.__console.log(`Found ${count} record(s) for ISBN:${isbnCode}`);
         this.__console.debug(JSON.stringify(jsonBody, null, 2));
 
-        return this.toBookModel(jsonBody.items[0]);
+        const firstItem = jsonBody.items[0];
+        if (firstItem.selfLink) {
+          this.__console.log(`Fetching additional details from: ${firstItem.selfLink}`);
+          const detailsResponse = await fetch(firstItem.selfLink, { method: 'get', headers: {} });
+          const detailsJson = await detailsResponse.json();
+          this.__console.log(`Additional details response status: ${detailsResponse.status} ${detailsResponse.statusText}\n${JSON.stringify(detailsJson, null, 2)}`);
+          if (!detailsResponse.ok) {
+            throw new Error('Failed request for additional details', { cause: JSON.stringify(detailsJson) });
+          }
+          return this.toBookModel(detailsJson);
+        }
+
+        return this.toBookModel(firstItem);
       });
   }
 
