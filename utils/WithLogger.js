@@ -1,5 +1,6 @@
 /* global console */
 
+const DEBUG_LOGS = process.env.DEBUG_LOGS === 'true';
 const serializeObjectParam = ({ tabSize = 2 } = {}) => (item) => typeof item === 'object' ? JSON.stringify(item, null, tabSize) : item;
 
 class WithLogger {
@@ -10,7 +11,7 @@ class WithLogger {
       ...console,
       log: this.__logMessage.bind(this, 'log'),
       warn: this.__logMessage.bind(this, 'warn'),
-      debug: this.__logMessage.bind(this, 'debug'),
+      debug: (...args) => DEBUG_LOGS && this.__logMessage('debug', ...args),
       info: this.__logMessage.bind(this, 'info'),
     };
   }

@@ -22,7 +22,7 @@ class GoogleBooksAPI extends WithLogger {
 
     const url = `${BASE_URL}?${queryParams}`;
     this.__console.log(`Fetching book data from Google Books API for ISBN:${isbnCode}`);
-    this.__console.log(`URL: ${url}`);
+    this.__console.debug(`URL: ${url}`);
     return fetch(url, { method: 'get', headers: {} })
       .then(async (response) => {
         const jsonBody = await response.json(); // Fix here
@@ -43,7 +43,7 @@ class GoogleBooksAPI extends WithLogger {
           this.__console.log(`Fetching additional details from: ${firstItem.selfLink}`);
           const detailsResponse = await fetch(firstItem.selfLink, { method: 'get', headers: {} });
           const detailsJson = await detailsResponse.json();
-          this.__console.log(`Additional details response status: ${detailsResponse.status} ${detailsResponse.statusText}\n${JSON.stringify(detailsJson, null, 2)}`);
+          this.__console.debug(`Additional details response status: ${detailsResponse.status} ${detailsResponse.statusText}\n${JSON.stringify(detailsJson, null, 2)}`);
           if (!detailsResponse.ok) {
             throw new Error('Failed request for additional details', { cause: JSON.stringify(detailsJson) });
           }
