@@ -83,6 +83,38 @@
       height: auto;
       margin-top: 20px;
     }
+
+    .manual-isbn-form {
+      margin: 1rem 0;
+      display: flex;
+      gap: 0.5rem;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .manual-isbn-form input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .manual-isbn-form button {
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .manual-isbn-form button:hover {
+      background: #0056b3;
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 
@@ -104,6 +136,10 @@
       </svg>
     </button>
   </div>
+  <form class="manual-isbn-form hidden" id="manual-isbn-form">
+    <input type="text" id="manual-isbn" placeholder="Enter ISBN manually" pattern="\d*" required>
+    <button type="submit">Search</button>
+  </form>
   <video id="preview"></video>
   <!-- Shows ISBN being searched -->
   <div id="searching"></div>
@@ -153,6 +189,28 @@
     const tagsInput = document.getElementById('tags-input');
     const tagsContainer = document.getElementById('tags-container');
     let tags = new Set();
+
+    const manualIsbnForm = document.getElementById('manual-isbn-form');
+    const manualIsbnInput = document.getElementById('manual-isbn');
+
+    manualIsbnForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const manualIsbn = manualIsbnInput.value.trim();
+      if (manualIsbn) {
+        try {
+          setLoading(true);
+          stopScanVideoFeed();
+          barcode = manualIsbn;
+          searchingElem.textContent = `Searching for ISBN: ${barcode}`;
+          await searchForBarcode(barcode);
+        } catch (error) {
+          console.error('Error searching for manual ISBN:', error);
+        } finally {
+          setLoading(false);
+          manualIsbnInput.value = '';
+        }
+      }
+    });
 
     async function loadCategories() {
       try {
@@ -307,14 +365,21 @@
 
     function stopScanVideoFeed() {
       codeReader.reset();
+      barcode = null;
       document.getElementById('start-scan').classList.remove('disabled');
       document.getElementById('stop-scan').classList.add('disabled');
+      previewElem.classList.add('hidden');
+      manualIsbnForm.value = '';
+      manualIsbnForm.classList.remove('hidden');
     }
 
     function startScanVideoFeed() {
       codeReader.decodeFromVideoDevice(null, previewElem, handleScanResult);
       document.getElementById('start-scan').classList.add('disabled');
       document.getElementById('stop-scan').classList.remove('disabled');
+      previewElem.classList.remove('hidden');
+      manualIsbnForm.value = '';
+      manualIsbnForm.classList.add('hidden');
     }
 
     function handleScanResult(result, err) {
