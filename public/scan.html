@@ -38,6 +38,51 @@
     .error {
       color: red;
     }
+
+    .form-group {
+      margin: 1rem 0;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .form-group select, .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tag-pill {
+      background: #e0e0e0;
+      padding: 4px 8px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-pill button {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .cover-image {
+      max-width: min(24em, 100%);
+      height: auto;
+      margin-top: 20px;
+    }
   </style>
 </head>
 
@@ -66,6 +111,31 @@
   <dialog id="loading-dialog">
     <p>Loading...</p>
   </dialog>
+  <form id="book-form" style="display:none;">
+    <div class="form-group">
+      <label for="category">Categoria*:</label>
+      <select id="category" name="category" required>
+        <option value="">Selecione uma categoria</option>
+        <option value="Ciência">Ciência</option>
+        <option value="Culinária">Culinária</option>
+        <option value="Ficção">Ficção</option>
+        <option value="Mangá">Mangá</option>
+        <option value="Psicologia">Psicologia</option>
+        <option value="Viagens">Viagens</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="subcategory">Subcategoria:</label>
+      <select id="subcategory" name="subcategory">
+        <option value="">Selecione uma subcategoria</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="tags">Tags:</label>
+      <input type="text" id="tags-input" name="tags" placeholder="Digite tags e pressione Enter">
+      <div class="tags-container" id="tags-container"></div>
+    </div>
+  </form>
   <div id="result"></div>
   <button id="generate-md" style="display:none;">Generate Markdown</button>
   <button id="reset" style="display:none;">Reset</button>
@@ -82,6 +152,74 @@
 
     let barcode = null;
     let bookData = null;
+
+    const subcategoryOptions = {
+      'Ficção': ['Quadrinhos', 'Romance', 'Terror', 'Fantasia'],
+      'Mangá': ['One Piece', 'Delicious in Dungeon', 'DanDaDan'],
+      'Culinária': ['Doces', 'Salgados', 'Culturais']
+    };
+
+    const form = document.getElementById('book-form');
+    const categorySelect = document.getElementById('category');
+    const subcategorySelect = document.getElementById('subcategory');
+    const tagsInput = document.getElementById('tags-input');
+    const tagsContainer = document.getElementById('tags-container');
+    let tags = new Set();
+
+    categorySelect.addEventListener('change', function() {
+      const category = this.value;
+      subcategorySelect.innerHTML = '<option value="">Selecione uma subcategoria</option>';
+      
+      if (subcategoryOptions[category]) {
+        subcategoryOptions[category].forEach(sub => {
+          const option = document.createElement('option');
+          option.value = sub;
+          option.textContent = sub;
+          subcategorySelect.appendChild(option);
+        });
+        subcategorySelect.disabled = false;
+      } else {
+        subcategorySelect.disabled = true;
+      }
+    });
+
+    function addTag(tag) {
+      if (!tag || tags.has(tag)) return;
+      tags.add(tag);
+      updateTagsPills();
+    }
+
+    function removeTag(tag) {
+      tags.delete(tag);
+      updateTagsPills();
+    }
+
+    function updateTagsPills() {
+      tagsContainer.innerHTML = '';
+      tags.forEach(tag => {
+        const pill = document.createElement('span');
+        pill.className = 'tag-pill';
+        pill.innerHTML = `
+          ${tag}
+          <button type="button" onclick="removeTag('${tag}')">×</button>
+        `;
+        tagsContainer.appendChild(pill);
+      });
+    }
+
+    tagsInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const tag = this.value.trim();
+        if (tag) {
+          addTag(tag);
+          this.value = '';
+        }
+      } else if (e.key === 'Backspace' && this.value === '' && tags.size > 0) {
+        const lastTag = Array.from(tags).pop();
+        removeTag(lastTag);
+      }
+    });
 
     loadingDialog.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
@@ -126,15 +264,21 @@
         const keyCell = document.createElement('td');
         keyCell.textContent = key;
         const valueCell = document.createElement('td');
-        valueCell.innerHTML = value;
+        valueCell.innerHTML = typeof value === 'object' ? JSON.stringify(value) : value;
         row.appendChild(keyCell);
         row.appendChild(valueCell);
         table.appendChild(row);
       });
       const title = document.createElement('p');
       title.innerText = 'Book Data';
+      const coverImage = document.createElement('img');
+      coverImage.src = data.coverImage || data.thumbnail;
+      coverImage.alt = 'Book Cover';
+      coverImage.classList.add('cover-image');
       resultElem.appendChild(title);
       resultElem.appendChild(table);
+      resultElem.appendChild(coverImage);
+      form.style.display = 'block';
       generateMdButton.style.display = 'block';
       resetButton.style.display = 'block';
     }
@@ -174,6 +318,12 @@
       searchingElem.textContent = '';
       generateMdButton.style.display = 'none';
       resetButton.style.display = 'none';
+      form.style.display = 'none';
+      tags.clear();
+      updateTagsPills();
+      categorySelect.value = '';
+      subcategorySelect.value = '';
+      subcategorySelect.disabled = true;
     }
 
     document.getElementById('start-scan').addEventListener('click', () => {
@@ -187,15 +337,27 @@
     });
 
     generateMdButton.addEventListener('click', () => {
+      if (!categorySelect.value) {
+        alert('Por favor, selecione uma categoria');
+        return;
+      }
+
       setLoading(true);
       fetch('/books/generate-md', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ isbn: bookData.isbn }),
+        body: JSON.stringify({
+          isbn: bookData.isbn,
+          category: categorySelect.value,
+          subcategory: subcategorySelect.value,
+          tags: Array.from(tags).join(',')
+        }),
       }).then(response => response.text())
-        .then(message => alert(message))
+        .then(({ message, relativePath }) => {
+          alert(`${message}\n${filepath.split('/').at(-1)}`);
+        })
         .catch(error => alert(`Error: ${error.message}`))
         .finally(() => {
           resetSearchResults();

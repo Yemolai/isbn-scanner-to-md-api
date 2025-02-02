@@ -85,6 +85,7 @@ class ISBNService extends WithLogger {
   }
 
   async generateMarkdown(bookData) {
+    const { category, subcategory } = bookData;
     const localCoverPath = await this.downloadCoverImage(bookData);
     const templateData = {
       ...bookData,
@@ -95,7 +96,7 @@ class ISBNService extends WithLogger {
     const template = handlebars.compile(templateContent);
     const markdown = template(templateData);
 
-    const outputDir = await getMarkdownPath();
+    const outputDir = await getMarkdownPath(category, subcategory);
     const filename = `${escapeFilename(bookData.title, { replacer: ' ', lowercase: false })}.md`;
     const outputPath = path.join(outputDir, filename);
 
@@ -104,7 +105,8 @@ class ISBNService extends WithLogger {
 
       return {
         content: markdown,
-        path: outputPath
+        path: outputPath,
+        relativePath: path.relative(await getMarkdownPath(), outputPath)
       };
     } catch (error) {
       this.__console.error(error);

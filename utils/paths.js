@@ -15,13 +15,16 @@ function escapeFilename(title, {
     .substring(0, maxLength);
 }
 
-async function getMarkdownPath() {
-  const configuredPath = process.env.MARKDOWN_OUTPUT_PATH;
-
-  // Default path inside repository
-  const targetPath = configuredPath || (path.join(process.cwd(), 'markdown', 'books'));
-  await fs.mkdir(targetPath, { recursive: true });
-  return targetPath;
+async function getMarkdownPath(category = '', subcategory = '') {
+  const basePath = process.env.MARKDOWN_OUTPUT_PATH || path.join(process.cwd(), 'markdown', 'books');
+  
+  if (!category) return basePath;
+  
+  const categoryPath = path.join(basePath, category);
+  
+  const fullPath = subcategory ? path.join(categoryPath, subcategory) : categoryPath;
+  await fs.mkdir(fullPath, { recursive: true });
+  return fullPath;
 }
 
 async function getCoverImagesPath() {

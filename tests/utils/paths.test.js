@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs').promises;
 const { escapeFilename, getMarkdownPath, getCoverImagesPath, formatImagePath } = require('../../utils/paths');
 
 // Mock fs.promises
@@ -41,6 +42,7 @@ describe('getMarkdownPath', () => {
 
   beforeEach(() => {
     process.cwd = jest.fn().mockReturnValue(mockCwd);
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
@@ -52,11 +54,47 @@ describe('getMarkdownPath', () => {
     process.env.MARKDOWN_OUTPUT_PATH = '/custom/path';
     const result = await getMarkdownPath();
     expect(result).toBe('/custom/path');
+    expect(fs.mkdir).not.toHaveBeenCalled();
   });
 
   test('returns default path when no env variable is set', async () => {
     const result = await getMarkdownPath();
     expect(result).toBe(path.join(mockCwd, 'markdown', 'books'));
+  });
+
+  test('creates and returns category path when only category is provided', async () => {
+    process.env.MARKDOWN_OUTPUT_PATH = '/custom/path';
+    const result = await getMarkdownPath('Fiction');
+    expect(result).toBe('/custom/path/Fiction');
+    expect(fs.mkdir).toHaveBeenCalledWith('/custom/path/Fiction', { recursive: true });
+  });
+
+  test('creates and returns nested path when both category and subcategory are provided', async () => {
+    process.env.MARKDOWN_OUTPUT_PATH = '/custom/path';
+    const result = await getMarkdownPath('Fiction', 'Comics');
+    expect(result).toBe('/custom/path/Fiction/Comics');
+    expect(fs.mkdir).toHaveBeenCalledWith('/custom/path/Fiction/Comics', { recursive: true });
+  });
+
+  test('handles non-ASCII characters in category and subcategory paths', async () => {
+    process.env.MARKDOWN_OUTPUT_PATH = '/custom/path';
+    const result = await getMarkdownPath('Ficção', 'Mangá');
+    expect(result).toBe('/custom/path/Ficção/Mangá');
+    expect(fs.mkdir).toHaveBeenCalledWith('/custom/path/Ficção/Mangá', { recursive: true });
+  });
+
+  test('treats empty subcategory as category-only path', async () => {
+    process.env.MARKDOWN_OUTPUT_PATH = '/custom/path';
+    const result = await getMarkdownPath('Fiction', '');
+    expect(result).toBe('/custom/path/Fiction');
+    expect(fs.mkdir).toHaveBeenCalledWith('/custom/path/Fiction', { recursive: true });
+  });
+
+  test('handles undefined subcategory as category-only path', async () => {
+    process.env.MARKDOWN_OUTPUT_PATH = '/custom/path';
+    const result = await getMarkdownPath('Fiction', undefined);
+    expect(result).toBe('/custom/path/Fiction');
+    expect(fs.mkdir).toHaveBeenCalledWith('/custom/path/Fiction', { recursive: true });
   });
 });
 

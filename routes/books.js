@@ -6,6 +6,10 @@ const { OpenLibraryAPI } = require('../services/open-library/OpenLibrary.api');
 const { ISBNService } = require('../services/ISBN.service');
 const { asyncRoute } = require('../utils/asyncRoute');
 
+function loggingPrefix(name) {
+  return `${new Date().toISOString()} (/books router - ${name})`;
+}
+
 const apis = [
   ISBNDbAPI,
   GoogleBooksAPI,
@@ -34,6 +38,7 @@ router.get('/isbn/:isbn', asyncRoute(
 
     const isbnService = getISBNServiceInstance();
     const book = await isbnService.getBookByISBN(isbn);
+    console.log(loggingPrefix('/isbn/:isbn'), `Book data retrieved for ISBN:${isbn}`);
     res.json({ data: book.toObject() });
   }),
 );
@@ -50,17 +55,19 @@ router.post('/generate-md', async (req, res) => {
 
     const isbnService = getISBNServiceInstance();
     const book = await isbnService.getBookByISBN(isbn);
-    const { path } = await isbnService.generateMarkdown({
+    const { path, relativePath } = await isbnService.generateMarkdown({
       ...extraData,
       ...book.toObject(),
     });
 
+    console.log(loggingPrefix('/generate-md'), `Markdown generated for ISBN:${isbn} at ${path}`);
+
     res.status(201).json({
       message: 'Markdown generated successfully',
-      filepath: path,
+      relativePath,
     });
   } catch (error) {
-    console.error(new Date().toISOString(), '[/generate-md]', error);
+    console.error(loggingPrefix('/generate-md'), error);
     res.status(500).json({ error: error.message });
   }
 });
