@@ -137,7 +137,13 @@
     </button>
   </div>
   <form class="manual-isbn-form hidden" id="manual-isbn-form">
-    <input type="text" id="manual-isbn" placeholder="Enter ISBN manually" pattern="\d*" required>
+    <input 
+      type="text"
+      inputmode="numeric"
+      id="manual-isbn"
+      placeholder="Enter ISBN manually"
+      required
+    >
     <button type="submit">Search</button>
   </form>
   <video id="preview"></video>
