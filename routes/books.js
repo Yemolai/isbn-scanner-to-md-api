@@ -35,7 +35,7 @@ router.get('/isbn/:isbn', asyncRoute(
    */
   async (req, res) => {
     const { isbn } = req.params;
-    if (!isbn || /^([0-9]{9}[\-]?[0-9])|([0-9]{13})$/.test(isbn) == false) {
+    if (!isbn || /^([0-9]{9}[\-]?[0-9])|(978[0-9]{10})$/.test(isbn) == false) {
       res.status(400).json({ error: true, reasons: ['invalid ISBN parameter given'] });
       return;
     }
