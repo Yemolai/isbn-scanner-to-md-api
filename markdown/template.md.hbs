@@ -1,5 +1,5 @@
 ---
-título: {{{title}}}
+título: "{{{title}}}"
 autor: {{{authors}}}
 sku: "{{isbn}}"
 tipo: Livro
@@ -12,10 +12,9 @@ link: "{{{url}}}"
 pago: 
 pago_em: BRL
 usado?: false
-tags: {{tags}}
 ---
 # Local
-#estante-de-livros 
+#estante-de-livros {{tags}}
 # Dimensões
 {{#if dimensions}}
 {{#if dimensions.height}}{{dimensions.height.value}}{{/if}} x {{#if dimensions.width}}{{dimensions.width.value}}{{/if}} x {{#if dimensions.depth}}{{dimensions.depth.value}}{{/if}} cm (ALP)

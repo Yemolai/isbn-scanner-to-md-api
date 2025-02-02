@@ -10,6 +10,10 @@ function loggingPrefix(name) {
   return `${new Date().toISOString()} (/books router - ${name})`;
 }
 
+function toHashtag(tag) {
+  return `#${tag.replace(' ', '-').replace(/-+/g, '-')}`;
+}
+
 const apis = [
   ISBNDbAPI,
   GoogleBooksAPI,
@@ -47,7 +51,15 @@ router.post('/generate-md', async (req, res) => {
   try {
     const { isbn, category, subcategory, tags = '' } = req.body;
 
-    const extraData = { category, subcategory, tags };
+    const extraData = {
+      category,
+      subcategory,
+      tags: tags
+        .split(',')
+        .filter(v => v.toString().trim())
+        .map(toHashtag)
+        .join(' '), // convert tags to hashtags
+    };
 
     if (!isbn) {
       return res.status(400).json({ error: 'ISBN is required' });
