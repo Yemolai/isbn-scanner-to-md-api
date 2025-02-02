@@ -354,9 +354,9 @@
           subcategory: subcategorySelect.value,
           tags: Array.from(tags).join(',')
         }),
-      }).then(response => response.text())
+      }).then(response => response.json())
         .then(({ message, relativePath }) => {
-          alert(`${message}\n${filepath.split('/').at(-1)}`);
+          alert(`${message}:\n${relativePath}`);
         })
         .catch(error => alert(`Error: ${error.message}`))
         .finally(() => {

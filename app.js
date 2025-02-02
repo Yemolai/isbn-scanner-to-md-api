@@ -12,7 +12,8 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
 }
 
 const indexRouter = require('./routes/index');
-const books = require('./routes/books');
+const booksRouter = require('./routes/books');
+const categoriesRouter = require('./routes/categories');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/books', books);
+app.use('/books', booksRouter);
+app.use('/categories', categoriesRouter);
 
 module.exports = app;

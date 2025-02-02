@@ -61,7 +61,7 @@ class ISBNService extends WithLogger {
     return new Book(mergedBook);
   }
 
-  async downloadCoverImage(book) {
+  async downloadCoverImage(book, bookPath) {
     if (!book.coverImage) return null;
 
     const imagesPath = await getCoverImagesPath();
@@ -77,7 +77,7 @@ class ISBNService extends WithLogger {
       const buffer = await response.buffer();
       await fs.writeFile(outputPath, buffer);
 
-      return path.relative(await getMarkdownPath(), outputPath);
+      return path.relative(bookPath || (await getMarkdownPath()), outputPath);
     } catch (error) {
       this.__console.error('Error downloading cover image:', error);
       return null;
@@ -86,7 +86,8 @@ class ISBNService extends WithLogger {
 
   async generateMarkdown(bookData) {
     const { category, subcategory } = bookData;
-    const localCoverPath = await this.downloadCoverImage(bookData);
+    const outputDir = await getMarkdownPath(category, subcategory);
+    const localCoverPath = await this.downloadCoverImage(bookData, outputDir);
     const templateData = {
       ...bookData,
       localCoverPath
@@ -96,7 +97,6 @@ class ISBNService extends WithLogger {
     const template = handlebars.compile(templateContent);
     const markdown = template(templateData);
 
-    const outputDir = await getMarkdownPath(category, subcategory);
     const filename = `${escapeFilename(bookData.title, { replacer: ' ', lowercase: false })}.md`;
     const outputPath = path.join(outputDir, filename);
 
