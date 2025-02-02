@@ -39,6 +39,7 @@ class ISBNService extends WithLogger {
    * @returns {Book} merged book data
    */
   mergeBookData(books) {
+    this.__console.debug('Merging book data:', books);
     const mergedBook = books.reduce((acc, book) => {
       return {
         isbn: acc.isbn || book.isbn,
@@ -48,6 +49,11 @@ class ISBNService extends WithLogger {
         description: acc.description || book.description,
         thumbnail: acc.thumbnail || book.thumbnail,
         coverImage: acc.coverImage || book.coverImage,
+        publicationDate: acc.publicationDate || book.publicationDate,
+        width: acc.width || book.width,
+        height: acc.height || book.height,
+        depth: acc.depth || book.depth,
+        weight: acc.weight || book.weight,
         source: acc.source ? `${acc.source}, ${book.source}` : book.source
       };
     }, {});

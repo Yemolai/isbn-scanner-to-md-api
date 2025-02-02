@@ -3,19 +3,24 @@ título: {{{title}}}
 autor: {{{authors}}}
 sku: "{{isbn}}"
 tipo: Livro
-categoria: 
-subcategoria: 
+categoria: {{category}}
+subcategoria: {{subcategory}}
+source: {{#if source}}{{source}}{{/if}}
 comprado_em: 
 loja: 
-link: 
+link: "{{{url}}}"
 pago: 
 pago_em: BRL
 usado?: false
-tags: 
+tags: {{tags}}
 ---
 # Local
 #estante-de-livros 
 # Dimensões
+{{#if dimensions}}
+{{#if dimensions.height}}{{dimensions.height.value}}{{/if}} x {{#if dimensions.width}}{{dimensions.width.value}}{{/if}} x {{#if dimensions.depth}}{{dimensions.depth.value}}{{/if}} cm (ALP)
+{{#if dimensions.weight}}{{dimensions.weight.value}} {{dimensions.weight.unit}}{{/if}}
+{{/if}}
 
 # Fotos
 {{#if localCoverPath}}

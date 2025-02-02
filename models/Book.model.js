@@ -7,10 +7,11 @@ class Book {
     this.description = obj.description;
     this.thumbnail = obj.thumbnail;
     this.coverImage = obj.coverImage;
-    this.sizeWidth = obj.sizeW;
-    this.sizeHeight = obj.sizeH;
-    this.sizeDepth = obj.sizeD;
+    this.width = obj.width;
+    this.height = obj.height;
+    this.depth = obj.depth;
     this.source = obj.source;
+    this.weight = obj.weight;
   }
 
   toObject() {
@@ -29,9 +30,10 @@ class Book {
 
   dimensions() {
     const dimensions = {
-      width: this.sizeWidth,
-      height: this.sizeHeight,
-      depth: this.sizeDepth,
+      width: this.width ? { value: this.width.toFixed(1), unit: 'cm' } : undefined,
+      height: this.height ? { value: this.height.toFixed(1), unit: 'cm' } : undefined,
+      depth: this.depth ? { value: this.depth.toFixed(1), unit: 'cm' } : undefined,
+      weight: this.weight ? { value: this.weight.toFixed(3), unit: 'kg' } : undefined,
     };
 
     if (Object.values(dimensions).every(v => v == undefined || v == null)) {

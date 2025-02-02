@@ -40,7 +40,9 @@ router.get('/isbn/:isbn', asyncRoute(
 
 router.post('/generate-md', async (req, res) => {
   try {
-    const { isbn } = req.body;
+    const { isbn, category, subcategory, tags = '' } = req.body;
+
+    const extraData = { category, subcategory, tags };
 
     if (!isbn) {
       return res.status(400).json({ error: 'ISBN is required' });
@@ -48,7 +50,10 @@ router.post('/generate-md', async (req, res) => {
 
     const isbnService = getISBNServiceInstance();
     const book = await isbnService.getBookByISBN(isbn);
-    const { path } = await isbnService.generateMarkdown(book);
+    const { path } = await isbnService.generateMarkdown({
+      ...extraData,
+      ...book.toObject(),
+    });
 
     res.status(201).json({
       message: 'Markdown generated successfully',

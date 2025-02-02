@@ -1,6 +1,7 @@
 const { Book } = require("../../models/Book.model");
 const { WithLogger } = require("../../utils/WithLogger");
 const fetch = require('node-fetch');
+const { ISBNDbDTO } = require("./ISBNDb.dto");
 
 const BASE_URL = 'https://api2.isbndb.com';
 const API_KEY = process.env.ISBNDB_API_KEY;
@@ -57,31 +58,13 @@ class ISBNDbAPI extends WithLogger {
       this.__console.log(`Found record for ISBN:${isbnCode}`);
       this.__console.debug(JSON.stringify(jsonBody, null, 2));
 
-      return this.toBookModel(jsonBody.book);
+      return ISBNDbDTO.fromAPIResponse(jsonBody).toBookModel();
     } catch (error) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error('Network error while connecting to ISBNDb API', { cause: error });
       }
       throw error;
     }
-  }
-
-  /**
-   * 
-   * @param {Object} bookData ISBNDb API book data
-   * @returns {Book} book model
-   */
-  toBookModel(bookData) {
-    return new Book({
-      isbn: bookData.isbn13 || bookData.isbn,
-      title: bookData.title,
-      authors: bookData.authors?.join(', ') || '',
-      publishers: bookData.publisher || '',
-      description: bookData.synopsis || bookData.overview || null,
-      thumbnail: bookData.image || null,
-      coverImage: bookData.image || null,
-      source: 'ISBNDb'
-    });
   }
 }
 
